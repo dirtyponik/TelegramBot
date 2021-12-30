@@ -1,5 +1,7 @@
 # Импортируем необходимые компоненты
 from bs4 import BeautifulSoup
+from glob import glob
+from random import choice
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup, ParseMode
 from telegram.ext import ConversationHandler
 
@@ -19,6 +21,12 @@ def sms2(bot, update):
             'Кто-то отправил команду Начать. Что мне делать?')  # вывод сообщения в консоль для отправки команды /start
         bot.message.reply_text('Ну давайте уже начнем, {}! \nВыберите ниже, что вам интересно!'
                                .format(bot.message.chat.first_name), reply_markup=get_keyboard())  # отправка ответа
+
+#функция оправляет случайную картинку
+def send_meme(bot, update):
+    lists = glob('images/*')#создаем список из названий картинок
+    picture = choice(lists)#берем из списка одну картинку
+    update.bot.send_photo(chat_id=bot.message.chat.id, photo=open(picture, 'rb'))#отправляем картинку
 
 
 def get_anecdote(bot, update):

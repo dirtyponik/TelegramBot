@@ -6,5 +6,5 @@ from telegram import ReplyKeyboardMarkup, KeyboardButton
 def get_keyboard():
    contact_button = KeyboardButton('Отправить контакты', request_contact=True)
    location_button = KeyboardButton('Отправить геопозицию', request_location=True)
-   my_keyboard = ReplyKeyboardMarkup([['Начать', 'Расскажи анекдот'], [contact_button, location_button], ['Заполнить анкету']], resize_keyboard=True)
+   my_keyboard = ReplyKeyboardMarkup([['Начать', 'Расскажи анекдот'], [contact_button, location_button], ['Заполнить анкету', 'Покажи мем']], resize_keyboard=True)
    return my_keyboard
