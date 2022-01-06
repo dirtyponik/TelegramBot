@@ -4,17 +4,26 @@ from glob import glob
 from random import choice
 from telegram import ReplyKeyboardRemove, ReplyKeyboardMarkup, ParseMode
 from telegram.ext import ConversationHandler
-
+from emoji import emojize
 from utility import get_keyboard
+from utility import SMILE
+from monodb import mdb, search_or_save_user
 import requests
 
 
 # Функция sms() будет вызвана пользователем при отправке команда /start
 # Внутри функции будет описана логика при ее вызове
 def sms(bot, update):
+    user = search_or_save_user(mdb, bot.effective_user, bot.message)
+    print(user)
+    # print(bot.effective_user)
+    # print()
+    # print(bot.message)
+    # print()
+    smile = emojize(choice(SMILE), use_aliases=True)
     print('Кто-то отправил команду /start. Что мне делать?')  # вывод сообщения в консоль для отправки команды /start
     bot.message.reply_text('Здравствуйте, {}! \nВыберите ниже, что вам интересно!'
-                           .format(bot.message.chat.first_name), reply_markup=get_keyboard())  # отправка ответа
+                           .format(bot.message.chat.first_name, smile), reply_markup=get_keyboard())  # отправка ответа
 
 def sms2(bot, update):
         print(
