@@ -7,7 +7,7 @@ from telegram.ext import ConversationHandler
 from emoji import emojize
 from utility import get_keyboard
 from utility import SMILE
-from monodb import mdb, search_or_save_user
+from monodb import mdb, search_or_save_user, save_user_anketa
 import requests
 
 
@@ -67,7 +67,20 @@ def get_location(bot, update):
 
 
 def anketa_start(bot, update):
-    bot.message.reply_text('Как вас зовут?', reply_markup=ReplyKeyboardRemove())
+    user = search_or_save_user(mdb, bot.effective_user, bot.message) #
+    if 'anketa' in user:
+        text = """Результат предыдущего опроса:
+            <b>Имя:</b> {name}
+            <b>Возраст:</b> {age}
+            <b>Оценка:</b> {evaluation}
+            <b>Комментарий:</b> {comment}
+            
+            Данные будут обновлены!
+            Как вас зовут?""".format(**user['anketa'])
+        bot.message.reply_text(text, parse_mode=ParseMode.HTML, reply_markup=ReplyKeyboardRemove())  # задаем вопрос и убираем клавиатуру
+        return "user_name"
+    else:
+        bot.message.reply_text('Как вас зовут?', reply_markup=ReplyKeyboardRemove()) # задаем вопрос и убираем клавиатуру
     return "user_name"
 
 def anketa_get_name(bot, update):
@@ -89,17 +102,23 @@ def anketa_get_evaluation(bot, update):
     update.user_data['evaluation'] = bot.message.text  # временно сохраняем ответ
     reply_keyboard = [["Пропустить"]]  # создаем клавиатуру
     bot.message.reply_text("Напишите отзыв или нажмите кнопку пропустить этот шаг.",
-        reply_markup=ReplyKeyboardMarkup(reply_keyboard, resize_keyboard=True, one_time_keyboard=True))  # при нажатии клавиатура исчезает
+        reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))  # при нажатии клавиатура исчезает
     return "comment"  # ключ для определения следующего шага
 
 
 def anketa_comment(bot, update):
     update.user_data['comment'] = bot.message.text # временно сохраняем ответ
+
+    user = search_or_save_user(mdb, bot.effective_user, bot.message) #получаем данные из БД
+    anketa = save_user_anketa(mdb, user, update.user_data) #передаем и получаем резульаты анкеты
+    print(anketa)
+
     text = """Результат опроса:
     <b>Имя:</b> {name}
     <b>Возраст:</b> {age}
     <b>Оценка:</b> {evaluation}
-    <b>Комментарий:</b> {comment}""".format(**update.user_data)
+    <b>Комментарий:</b> {comment}
+    """.format(**update.user_data)
     bot.message.reply_text(text, parse_mode=ParseMode.HTML)# формирование текстового сообщения с форматированием HTML
     bot.message.reply_text("Спасибо вам за комментарий!", reply_markup=get_keyboard()) # сообщение и возврат основной клавиатуры
     return ConversationHandler.END #выход из диалога
@@ -107,11 +126,15 @@ def anketa_comment(bot, update):
 
 
 def anketa_exit_comment(bot, update):
-    update.user_data['comment'] = bot.message.text  # временно сохраняем ответ
+    update.user_data['comment'] = None
+
+    user = search_or_save_user(mdb, bot.effective_user, bot.message)  # получаем данные из БД
+    save_user_anketa(mdb, user, update.user_data)  # передаем резульаты анкеты
+
     text = """Результат опроса:
         <b>Имя:</b> {name}
         <b>Возраст:</b> {age}
-        <b>Оценка:</b> {evaluation)""".format(**update.user_data)
+        <b>Оценка:</b> {evaluation}""".format(**update.user_data)
     bot.message.reply_text(text, parse_mode=ParseMode.HTML)  # формирование текстового сообщения с форматированием HTML
     bot.message.reply_text("Спасибо!", reply_markup=get_keyboard())  # сообщение и возврат основной клавиатуры
     return ConversationHandler.END  # выход из диалога

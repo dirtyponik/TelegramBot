@@ -16,3 +16,18 @@ def search_or_save_user(mdb, effective_user, message):
         }
         mdb.users.insert_one(user) # сохраняем в коллекцию users
     return user
+
+
+#сохраняем - обновляем результаты анкеты и возвращаем результат
+def save_user_anketa(mdb, user, user_data):
+    mdb.users.update_one(
+        {'_id': user['_id']}, # поиск данных по ID
+        {'$set': {'anketa': {'name': user_data['name'], # обновляем пакет данных по текущему ID
+                            'age': user_data['age'],
+                            'evaluation': user_data['evaluation'],
+                            'comment': user_data['comment']
+                            }
+                  }
+         }
+    )
+    return user # передаем данные словаря(получаем из базы данных)

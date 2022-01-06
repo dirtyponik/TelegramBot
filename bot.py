@@ -29,7 +29,7 @@ def main():
                                     "comment": [MessageHandler(Filters.regex('Пропустить'), anketa_exit_comment),
                                                 MessageHandler(Filters.text, anketa_comment)],
                                     },
-                            fallbacks=[MessageHandler(Filters.text | Filters.video | Filters.photo, dontknow)]
+                            fallbacks=[MessageHandler(Filters.text | Filters.video | Filters.photo, Filters.document, dontknow)]
                             ))
 
 
@@ -39,5 +39,5 @@ def main():
 
 
 # вызываем запуск функции main
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
